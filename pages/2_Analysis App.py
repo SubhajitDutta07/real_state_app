@@ -5,36 +5,49 @@ import pickle
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
+import ast
 
-st.set_page_config(page_title="Plotting Demo")
-
+st.set_page_config(page_title='Plotting Demo')
 st.title('Analytics')
 
-new_df = pd.read_csv('datasets/data_viz1.csv')
-feature_text = pickle.load(open('datasets/feature_text.pkl','rb'))
+new_df = pd.read_csv('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/datasets/data_viz1.csv')
+feature_text = pickle.load(open('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/datasets/feature_text.pkl','rb'))
+df1 = pd.read_csv('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/datasets/gurgaon_properties.csv')
+df = pd.read_csv('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/datasets/gurgaon_properties_missing_imputation.csv')
+wordcloud_df = df1.merge(df, left_index=True, right_index=True)[['features','sector']]
 
-
-group_df = new_df.groupby('sector').mean()[['price','price_per_sqft','built_up_area','latitude','longitude']]
+group_df = new_df.groupby('sector')[['price', 'price_per_sqft', 'built_up_area', 'latitude', 'longitude']].mean()
 
 st.header('Sector Price per Sqft Geomap')
 fig = px.scatter_mapbox(group_df, lat="latitude", lon="longitude", color="price_per_sqft", size='built_up_area',
                   color_continuous_scale=px.colors.cyclical.IceFire, zoom=10,
                   mapbox_style="open-street-map",width=1200,height=700,hover_name=group_df.index)
+st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': True})
 
-st.plotly_chart(fig,use_container_width=True)
+st.header('Features Wordcloud according to the sectors')
 
-st.header('Features Wordcloud')
+sector_name = st.selectbox('Select sector',wordcloud_df['sector'].tolist())
+
+features = wordcloud_df[wordcloud_df['sector'] == sector_name]
+
+main = []
+for item in features['features'].dropna().apply(ast.literal_eval):
+    main.extend(item)
+
+feature_text=' '.join(main)
 
 wordcloud = WordCloud(width = 800, height = 800,
-                      background_color ='black',
-                      stopwords = set(['s']),  # Any stopwords you'd like to exclude
-                      min_font_size = 10).generate(feature_text)
+                        background_color ='black',
+                        stopwords = set(['s']),  # Any stopwords you'd like to exclude
+                        min_font_size = 10).generate(feature_text)
 
-plt.figure(figsize = (8, 8), facecolor = None)
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.tight_layout(pad = 0)
-st.pyplot()
+word_fig, ax = plt.subplots(figsize=(8, 8))
+ax.imshow(wordcloud, interpolation='bilinear')
+ax.axis("off")
+plt.tight_layout(pad=0)
+
+# Pass fig to Streamlit
+st.pyplot(word_fig)
 
 st.header('Area Vs Price')
 
@@ -82,13 +95,3 @@ sns.distplot(new_df[new_df['property_type'] == 'house']['price'],label='house')
 sns.distplot(new_df[new_df['property_type'] == 'flat']['price'], label='flat')
 plt.legend()
 st.pyplot(fig3)
-
-
-
-
-
-
-
-
-
-

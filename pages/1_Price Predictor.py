@@ -7,10 +7,10 @@ st.set_page_config(page_title="Viz Demo")
 
 
 
-with open('df.pkl','rb') as file:
+with open('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/pages/df.pkl','rb') as file:
     df = pickle.load(file)
 
-with open('pipeline.pkl','rb') as file:
+with open('/Users/sencer07/Desktop/DataScience/Projects/real-estate-app/structured_code/pages/pipeline.pkl','rb') as file:
     pipeline = pickle.load(file)
 
 
